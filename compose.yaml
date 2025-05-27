@@ -4,7 +4,10 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper
-    network_mode: "host"
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
     environment:
       ZOOKEEPER_SERVER_ID: 3
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -12,10 +15,15 @@ services:
       ZOOKEEPER_INIT_LIMIT: 5
       ZOOKEEPER_SYNC_LIMIT: 2
       ZOOKEEPER_SERVERS: ec2a:2888:3888;ec2b:2888:3888;ec2c:2888:3888
+    volumes:
+	    - ./zookeeper/data:/var/lib/zookeeper/data
+    command: ["bash", "-c", "echo 3 > /var/lib/zookeeper/data/myid && /etc/confluent/docker/run"]
     extra_hosts:
       - "ec2a:172.31.4.9"
       - "ec2b:172.31.4.226"
       - "ec2c:172.31.35.57"
+    networks:
+      - kafka-net
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
